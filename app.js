@@ -423,6 +423,15 @@ function deleteTodo(id) {
   refresh();
 }
 
+function editTodo(id, newText) {
+  const todo = todos.find((t) => t.id === id);
+  if (todo) {
+    todo.text = newText;
+    saveTodos();
+    refresh();
+  }
+}
+
 
 function getFilteredTodos() {
   let filtered = todos;
@@ -476,6 +485,43 @@ function renderTodos() {
     const textSpan = document.createElement('span');
     textSpan.className   = 'todo-text';
     textSpan.textContent = todo.text;
+
+    textSpan.addEventListener('click', () => {
+      if (textSpan.getAttribute('contenteditable') === 'true') return;
+      const original = todo.text;
+      textSpan.setAttribute('contenteditable', 'true');
+      textSpan.classList.add('editing');
+      textSpan.focus();
+      const range = document.createRange();
+      range.selectNodeContents(textSpan);
+      range.collapse(false);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+
+      let done = false;
+      const commit = () => {
+        if (done) return;
+        done = true;
+        textSpan.setAttribute('contenteditable', 'false');
+        textSpan.classList.remove('editing');
+        const newText = textSpan.textContent.trim();
+        if (newText && newText !== original) editTodo(todo.id, newText);
+        else textSpan.textContent = original;
+      };
+      const cancel = () => {
+        if (done) return;
+        done = true;
+        textSpan.setAttribute('contenteditable', 'false');
+        textSpan.classList.remove('editing');
+        textSpan.textContent = original;
+      };
+      textSpan.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); commit(); textSpan.blur(); }
+        if (e.key === 'Escape') { cancel(); textSpan.blur(); }
+      });
+      textSpan.addEventListener('blur', commit);
+    });
 
     // 휴지통 버튼
     const trashBtn = document.createElement('button');
