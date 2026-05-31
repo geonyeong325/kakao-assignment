@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Todo App</title>
+    <!-- Pretendard: 기본 텍스트용 -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
+    />
+    <!-- Pretendard Variable: 캘린더 날짜 숫자 표기용 -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+
+      <!-- 앱 제목 -->
+      <h1 class="app-title">
+        <span class="title-checkmark">✓</span> Todo list
+      </h1>
+      <p class="app-subtitle">오늘 할 일을 정리해보세요</p>
+
+      <!-- 주간 캘린더 뷰 -->
+      <div class="week-view">
+        <div class="week-nav">
+          <button id="prevWeekBtn" class="btn-week-nav">&#8249;</button>
+
+          <!-- 중앙 클릭 영역 — 날짜 범위·주차 레이블 + 토글 화살표 -->
+          <button id="calendarToggleBtn" class="btn-calendar-toggle">
+            <span id="weekRangeLabel" class="week-range-label"></span>
+            <span id="weekOfMonthLabel" class="week-of-month-label"></span>
+            <span id="calendarChevron" class="calendar-chevron">&#9662;</span>
+          </button>
+
+          <button id="nextWeekBtn" class="btn-week-nav">&#8250;</button>
+        </div>
+
+        <!-- 날짜 카드 그리드 — collapsed 클래스로 접기/펼치기 -->
+        <div id="weekDates" class="week-dates"></div>
+      </div>
+
+      <!-- 입력 영역 — 주간 뷰 아래, 필터 탭 위 -->
+      <div class="input-area">
+        <input
+          type="text"
+          id="todoInput"
+          class="todo-input"
+          placeholder="할 일을 입력하세요..."
+          maxlength="100"
+        />
+        <button id="addBtn" class="btn btn-add">추가</button>
+      </div>
+
+      <!-- 상태 필터 탭 (전체 / 진행 중 / 완료) -->
+      <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="all">전체</button>
+        <button class="filter-tab" data-filter="active">진행 중</button>
+        <button class="filter-tab" data-filter="completed">완료</button>
+      </div>
+
+      <!-- Todo 목록 -->
+      <ul id="todoList" class="todo-list"></ul>
+
+      <!-- 현재 필터에 해당하는 항목이 없을 때 표시되는 안내 메시지 -->
+      <p id="emptyMessage" class="empty-message">할 일을 추가해보세요</p>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
