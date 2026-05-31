@@ -95,18 +95,110 @@ body {
 .btn-add          { background-color: #AED9E0; color: #2a6b74; }
 .btn-add:hover    { background-color: #98cdd5; }
 
-.btn-complete     { background-color: #C9E4CA; color: #3a7a3c; padding: 7px 11px; font-size: 0.8rem; border-radius: 8px; }
-.btn-complete:hover { background-color: #b2d6b3; }
-.todo-item.completed .btn-complete { background-color: #e4efe4; color: #7a9e7b; }
 
-.btn-edit         { background-color: #B8E0D2; color: #2a7a5f; padding: 7px 11px; font-size: 0.8rem; border-radius: 8px; }
-.btn-edit:hover   { background-color: #9ed3c0; }
+/* ===== 캘린더 통합 토글 바디 ===== */
+.calendar-body {
+  overflow: hidden;
+  max-height: 520px;
+  opacity: 1;
+  margin-top: 12px;
+  transition: max-height 0.3s ease, opacity 0.25s ease, margin-top 0.3s ease;
+}
 
-.btn-save         { background-color: #AED9E0; color: #2a6b74; padding: 7px 11px; font-size: 0.8rem; border-radius: 8px; }
-.btn-save:hover   { background-color: #98cdd5; }
+.calendar-body.collapsed {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+}
 
-.btn-delete       { background-color: #fde8e8; color: #c0392b; padding: 7px 11px; font-size: 0.8rem; border-radius: 8px; }
-.btn-delete:hover { background-color: #fbd3d3; }
+/* 월별 서브 내비게이션 */
+.month-sub-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 2px 8px;
+}
+
+.month-sub-label {
+  font-family: 'PretendardVariable', 'Pretendard', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #4a8a96;
+}
+
+.btn-month-sub-nav {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 6px;
+  background-color: #e4f3f6;
+  color: #4a8a96;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.18s;
+}
+
+.btn-month-sub-nav:hover { background-color: #c9e8ed; }
+
+/* 월별 / 주간 구분선 */
+.calendar-divider {
+  height: 1px;
+  background-color: #e0f0f4;
+  margin: 10px 2px 8px;
+}
+
+.month-header-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 4px;
+}
+
+.month-header-cell {
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #99bcc1;
+  padding: 4px 0;
+}
+
+.month-header-cell.sunday   { color: #e53935; }
+.month-header-cell.saturday { color: #5b8dd9; }
+
+.month-week-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  padding: 1px 2px;
+}
+
+.month-week-row:hover              { background-color: #f0f9fb; }
+.month-week-row.active-week        { background-color: #e4f3f6; }
+.month-week-row.active-week:hover  { background-color: #d4ecf0; }
+
+.month-date-cell {
+  text-align: center;
+  font-family: 'PretendardVariable', 'Pretendard', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #444;
+  padding: 5px 0;
+}
+
+.month-date-cell.other-month           { color: #ccc; }
+.month-date-cell.today                 { font-weight: 800; color: #2a7a84; }
+.month-date-cell.sunday                { color: #e53935; }
+.month-date-cell.saturday              { color: #5b8dd9; }
+.month-date-cell.today.sunday          { color: #e53935; }
+.month-date-cell.today.saturday        { color: #5b8dd9; }
+.month-date-cell.other-month.sunday    { color: #f5b8b6; }
+.month-date-cell.other-month.saturday  { color: #b8cce8; }
 
 /* ===== 주간 뷰 ===== */
 .week-view {
@@ -191,22 +283,11 @@ body {
   transform: rotate(-90deg);
 }
 
-/* 7개 날짜 카드 flex 컨테이너 — 접기/펼치기 애니메이션 */
+/* 7개 날짜 카드 flex 컨테이너 — 항상 표시 */
 .week-dates {
   display: flex;
   gap: 6px;
-  overflow: hidden;
-  max-height: 130px;
-  opacity: 1;
   margin-top: 12px;
-  transition: max-height 0.25s ease, opacity 0.2s ease, margin-top 0.25s ease;
-}
-
-/* 접힌 상태 — 높이와 위쪽 여백이 0으로 수렴 */
-.week-dates.collapsed {
-  max-height: 0;
-  opacity: 0;
-  margin-top: 0;
 }
 
 /* 개별 날짜 카드 */
@@ -248,17 +329,25 @@ body {
 .date-card.saturday .day-name,
 .date-card.saturday .date-number { color: #5b8dd9; }
 
-/* 일요일 — 선명한 빨강으로 변경 */
+/* 일요일 */
 .date-card.sunday .day-name,
-.date-card.sunday .date-number   { color: #e53935; }
+.date-card.sunday .date-number { color: #e53935; }
 
 /* 오늘(미선택) 텍스트 강조 */
 .date-card.today:not(.selected) .day-name,
 .date-card.today:not(.selected) .date-number { color: #2a7a84; }
 
+/* 오늘이면서 일요일 */
+.date-card.sunday.today:not(.selected) .day-name,
+.date-card.sunday.today:not(.selected) .date-number { color: #e53935; }
+
 /* 선택된 카드 텍스트 — teal 강조 */
 .date-card.selected .day-name,
 .date-card.selected .date-number { color: #3a8a96; }
+
+/* 선택된 일요일 */
+.date-card.sunday.selected .day-name,
+.date-card.sunday.selected .date-number { color: #e53935; }
 
 /* ===== 날짜 카드 개수 배지 영역 ===== */
 .date-counts {
@@ -282,16 +371,16 @@ body {
 
 .count-badge.has-count { visibility: visible; }
 
-/* 진행 중 배지 — 삭제 버튼 색상 (빨강) */
+/* 진행 중 배지 */
 .count-pending {
-  background-color: #fde8e8;
-  color: #c0392b;
-}
-
-/* 완료 배지 — 초록 (기존 진행 중 색상) */
-.count-done {
   background-color: #C9E4CA;
   color: #3a7a3c;
+}
+
+/* 완료 배지 */
+.count-done {
+  background-color: #fde8e8;
+  color: #c0392b;
 }
 
 /* ===== 필터 탭 바 ===== */
@@ -376,27 +465,56 @@ body {
   color: #aaa;
 }
 
-/* ===== 편집 인풋 ===== */
-.todo-edit-input {
-  flex: 1;
-  padding: 6px 10px;
-  border: 1.5px solid #AED9E0;
-  border-radius: 8px;
-  font-family: 'Pretendard', sans-serif;
-  font-size: 0.95rem;
-  color: #333;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.todo-edit-input:focus { border-color: #7bbfc9; }
-
-/* ===== 항목 액션 버튼 그룹 ===== */
-.item-actions {
+/* ===== 체크박스 ===== */
+.todo-check {
   display: flex;
-  gap: 6px;
+  align-items: center;
+  cursor: pointer;
   flex-shrink: 0;
 }
+
+.todo-checkbox {
+  display: none;
+}
+
+.checkmark {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #AED9E0;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.todo-checkbox:checked + .checkmark {
+  background-color: #AED9E0;
+  border-color: #AED9E0;
+}
+
+.todo-checkbox:checked + .checkmark::after {
+  content: '✓';
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+/* ===== 휴지통 버튼 ===== */
+.btn-trash {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #e53935;
+  opacity: 0.5;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+
+.btn-trash:hover { opacity: 1; }
 
 /* ===== 빈 상태 안내 메시지 ===== */
 .empty-message {

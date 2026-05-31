@@ -25,7 +25,7 @@
       </h1>
       <p class="app-subtitle">오늘 할 일을 정리해보세요</p>
 
-      <!-- 주간 캘린더 뷰 -->
+      <!-- 캘린더 뷰 (월별 + 주간 통합 토글) -->
       <div class="week-view">
         <div class="week-nav">
           <button id="prevWeekBtn" class="btn-week-nav">&#8249;</button>
@@ -40,7 +40,21 @@
           <button id="nextWeekBtn" class="btn-week-nav">&#8250;</button>
         </div>
 
-        <!-- 날짜 카드 그리드 — collapsed 클래스로 접기/펼치기 -->
+        <!-- 월별 그리드 — collapsed 클래스로 접기/펼치기 -->
+        <div id="calendarBody" class="calendar-body">
+          <!-- 월별 서브 내비게이션 -->
+          <div class="month-sub-nav">
+            <button id="prevMonthBtn" class="btn-month-sub-nav">&#8249;</button>
+            <span id="monthLabel" class="month-sub-label"></span>
+            <button id="nextMonthBtn" class="btn-month-sub-nav">&#8250;</button>
+          </div>
+          <!-- 월별 날짜 그리드 -->
+          <div id="monthGrid" class="month-grid"></div>
+          <!-- 구분선 -->
+          <div class="calendar-divider"></div>
+        </div>
+
+        <!-- 주간 날짜 카드 — 항상 표시 -->
         <div id="weekDates" class="week-dates"></div>
       </div>
 

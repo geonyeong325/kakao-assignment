@@ -11,6 +11,7 @@ let currentFilter       = 'all';  // 상태 필터 ('all' | 'active' | 'complete
 let currentWeekOffset   = 0;      // 0 = 이번 주, -1 = 지난 주, 1 = 다음 주 ...
 let selectedDate        = null;   // 선택된 날짜 ("YYYY-MM-DD"), null이면 날짜 필터 없음
 let isCalendarExpanded  = true;   // 캘린더 그리드 표시 여부
+let currentMonthOffset  = 0;      // 0 = 이번 달
 
 // ===== DOM 요소 참조 =====
 
@@ -26,6 +27,11 @@ const calendarChevron    = document.getElementById('calendarChevron');
 const weekRangeLabel     = document.getElementById('weekRangeLabel');
 const weekOfMonthLabel   = document.getElementById('weekOfMonthLabel');
 const weekDatesEl        = document.getElementById('weekDates');
+const prevMonthBtn       = document.getElementById('prevMonthBtn');
+const nextMonthBtn       = document.getElementById('nextMonthBtn');
+const monthLabelEl       = document.getElementById('monthLabel');
+const monthGridEl        = document.getElementById('monthGrid');
+const calendarBodyEl     = document.getElementById('calendarBody');
 
 // ===== 이벤트 리스너 =====
 
@@ -43,20 +49,25 @@ filterTabs.forEach((tab) => {
 prevWeekBtn.addEventListener('click', () => {
   currentWeekOffset--;
   selectedDate = null;
-  isCalendarExpanded = true;
+  syncMonthToWeek();
   refresh();
 });
 
-// 다음 주 — 날짜 선택 초기화 + 캘린더 자동 전개
+// 다음 주 — 날짜 선택 초기화
 nextWeekBtn.addEventListener('click', () => {
   currentWeekOffset++;
   selectedDate = null;
-  isCalendarExpanded = true;
+  syncMonthToWeek();
   refresh();
 });
 
 // 중앙 토글 버튼 — 캘린더 그리드 접기/펼치기
 calendarToggleBtn.addEventListener('click', toggleCalendar);
+
+// 월별 캘린더 — 이전/다음 달 이동
+prevMonthBtn.addEventListener('click', () => { currentMonthOffset--; renderMonthView(); });
+nextMonthBtn.addEventListener('click', () => { currentMonthOffset++; renderMonthView(); });
+
 
 // ===== 캘린더 토글 함수 =====
 
@@ -73,8 +84,106 @@ function toggleCalendar() {
  * 렌더 사이클마다 호출해 상태와 UI를 일치시킴
  */
 function applyCalendarState() {
-  weekDatesEl.classList.toggle('collapsed', !isCalendarExpanded);
+  calendarBodyEl.classList.toggle('collapsed', !isCalendarExpanded);
   calendarChevron.classList.toggle('collapsed', !isCalendarExpanded);
+}
+
+// ===== 월별 캘린더 토글 =====
+
+/**
+ * syncMonthToWeek — currentWeekOffset 기준 주의 수요일이 속한 달로 currentMonthOffset을 동기화
+ */
+function syncMonthToWeek() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const weekSunday = getSunday(currentWeekOffset);
+  const midWeek = new Date(weekSunday);
+  midWeek.setDate(weekSunday.getDate() + 3);
+  currentMonthOffset = (midWeek.getFullYear() - today.getFullYear()) * 12
+                     + (midWeek.getMonth()    - today.getMonth());
+}
+
+/**
+ * getWeekOffsetForDate — 주어진 날짜(일요일)에서 오늘 기준 몇 주 차이인지 반환
+ */
+function getWeekOffsetForDate(date) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todaySunday = new Date(today);
+  todaySunday.setDate(today.getDate() - today.getDay());
+  const targetSunday = new Date(date);
+  targetSunday.setHours(0, 0, 0, 0);
+  const diffMs = targetSunday.getTime() - todaySunday.getTime();
+  return Math.round(diffMs / (7 * 24 * 60 * 60 * 1000));
+}
+
+/**
+ * renderMonthView — currentMonthOffset 기준 달의 전체 캘린더 그리드를 그림
+ * 각 주(row)를 클릭하면 해당 주로 주간 뷰가 이동함
+ */
+function renderMonthView() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const base = new Date(today.getFullYear(), today.getMonth() + currentMonthOffset, 1);
+
+  monthLabelEl.textContent = `${base.getFullYear()}년 ${base.getMonth() + 1}월`;
+
+  const firstOfMonth = new Date(base.getFullYear(), base.getMonth(), 1);
+  const lastOfMonth  = new Date(base.getFullYear(), base.getMonth() + 1, 0);
+
+  const startDate = new Date(firstOfMonth);
+  startDate.setDate(firstOfMonth.getDate() - firstOfMonth.getDay());
+
+  const endDate = new Date(lastOfMonth);
+  endDate.setDate(lastOfMonth.getDate() + (6 - lastOfMonth.getDay()));
+
+  monthGridEl.innerHTML = '';
+
+  // 요일 헤더
+  const headerRow = document.createElement('div');
+  headerRow.className = 'month-header-row';
+  DAY_NAMES.forEach((name, i) => {
+    const cell = document.createElement('span');
+    cell.className = 'month-header-cell';
+    if (i === 0) cell.classList.add('sunday');
+    if (i === 6) cell.classList.add('saturday');
+    cell.textContent = name;
+    headerRow.appendChild(cell);
+  });
+  monthGridEl.appendChild(headerRow);
+
+  const todayStr           = formatDate(today);
+  const currentWeekSundayStr = formatDate(getSunday(currentWeekOffset));
+
+  const cursor = new Date(startDate);
+  while (cursor <= endDate) {
+    const rowSundayStr = formatDate(cursor);
+    const weekRow = document.createElement('div');
+    weekRow.className = 'month-week-row';
+    if (rowSundayStr === currentWeekSundayStr) weekRow.classList.add('active-week');
+
+    const rowSunday = new Date(cursor);
+    weekRow.addEventListener('click', () => {
+      currentWeekOffset = getWeekOffsetForDate(rowSunday);
+      selectedDate = null;
+      isCalendarExpanded = true;
+      refresh();
+    });
+
+    for (let i = 0; i < 7; i++) {
+      const cell = document.createElement('span');
+      cell.className = 'month-date-cell';
+      if (cursor.getMonth() !== base.getMonth()) cell.classList.add('other-month');
+      if (formatDate(cursor) === todayStr)        cell.classList.add('today');
+      if (i === 0) cell.classList.add('sunday');
+      if (i === 6) cell.classList.add('saturday');
+      cell.textContent = cursor.getDate();
+      weekRow.appendChild(cell);
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    monthGridEl.appendChild(weekRow);
+  }
 }
 
 // ===== LocalStorage 연동 =====
@@ -259,6 +368,7 @@ function renderWeekView() {
 function refresh() {
   renderWeekView();
   renderTodos();
+  renderMonthView();
 }
 
 // ===== 기능 함수 =====
@@ -279,7 +389,7 @@ function addTodo() {
   const text = todoInput.value.trim();
 
   if (!text) {
-    alert('할 일을 입력해주세요!');
+    alert('빈 값은 추가할 수 없습니다. 할 일을 입력해주세요!');
     todoInput.focus();
     return;
   }
@@ -313,47 +423,6 @@ function deleteTodo(id) {
   refresh();
 }
 
-function startEditing(id) {
-  const item = document.querySelector(`[data-id="${id}"]`);
-  const todo = todos.find((t) => t.id === id);
-  if (!item || !todo) return;
-
-  const textEl  = item.querySelector('.todo-text');
-  const editBtn = item.querySelector('.btn-edit');
-
-  const editInput = document.createElement('input');
-  editInput.type      = 'text';
-  editInput.className = 'todo-edit-input';
-  editInput.value     = todo.text;
-  editInput.maxLength = 100;
-  textEl.replaceWith(editInput);
-  editInput.focus();
-  editInput.select();
-
-  editBtn.textContent = '저장';
-  editBtn.className   = 'btn btn-save';
-  editBtn.onclick     = () => saveEdit(id, editInput);
-
-  editInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter')  saveEdit(id, editInput);
-    if (e.key === 'Escape') refresh();
-  });
-}
-
-function saveEdit(id, inputEl) {
-  const newText = inputEl.value.trim();
-  if (!newText) {
-    alert('할 일 내용을 입력해주세요!');
-    inputEl.focus();
-    return;
-  }
-  const todo = todos.find((t) => t.id === id);
-  if (todo) {
-    todo.text = newText;
-    saveTodos();
-    refresh();
-  }
-}
 
 function getFilteredTodos() {
   let filtered = todos;
@@ -388,30 +457,39 @@ function renderTodos() {
     li.className  = `todo-item${todo.completed ? ' completed' : ''}`;
     li.dataset.id = todo.id;
 
+    // 체크박스
+    const checkLabel = document.createElement('label');
+    checkLabel.className = 'todo-check';
+
+    const checkbox = document.createElement('input');
+    checkbox.type      = 'checkbox';
+    checkbox.className = 'todo-checkbox';
+    checkbox.checked   = todo.completed;
+    checkbox.addEventListener('change', () => toggleComplete(todo.id));
+
+    const checkmark = document.createElement('span');
+    checkmark.className = 'checkmark';
+
+    checkLabel.append(checkbox, checkmark);
+
+    // 텍스트
     const textSpan = document.createElement('span');
     textSpan.className   = 'todo-text';
     textSpan.textContent = todo.text;
 
-    const actions = document.createElement('div');
-    actions.className = 'item-actions';
+    // 휴지통 버튼
+    const trashBtn = document.createElement('button');
+    trashBtn.className       = 'btn-trash';
+    trashBtn.setAttribute('aria-label', '삭제');
+    trashBtn.innerHTML       = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="3 6 5 6 21 6"></polyline>
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+      <path d="M10 11v6M14 11v6"></path>
+      <path d="M9 6V4h6v2"></path>
+    </svg>`;
+    trashBtn.onclick = () => deleteTodo(todo.id);
 
-    const completeBtn = document.createElement('button');
-    completeBtn.className   = 'btn btn-complete';
-    completeBtn.textContent = todo.completed ? '취소' : '완료';
-    completeBtn.onclick     = () => toggleComplete(todo.id);
-
-    const editBtn = document.createElement('button');
-    editBtn.className   = 'btn btn-edit';
-    editBtn.textContent = '편집';
-    editBtn.onclick     = () => startEditing(todo.id);
-
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className   = 'btn btn-delete';
-    deleteBtn.textContent = '삭제';
-    deleteBtn.onclick     = () => deleteTodo(todo.id);
-
-    actions.append(completeBtn, editBtn, deleteBtn);
-    li.append(textSpan, actions);
+    li.append(checkLabel, textSpan, trashBtn);
     todoList.appendChild(li);
   });
 }
