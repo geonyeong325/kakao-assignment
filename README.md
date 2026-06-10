@@ -1,3 +1,4 @@
+```
 kakao-assignment-2/todo-react/
 │
 ├── index.html                        # HTML 진입점
@@ -23,3 +24,4 @@ kakao-assignment-2/todo-react/
     │
     └── utils/
         └── dateUtils.js              # 날짜 계산 유틸 함수
+```
