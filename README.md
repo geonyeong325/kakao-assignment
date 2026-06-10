@@ -1,16 +1,25 @@
-# React + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+kakao-assignment-2/todo-react/
+│
+├── index.html                        # HTML 진입점
+│
+├── vite.config.js                    # Vite 빌드 설정
+├── postcss.config.js              # PostCSS 설정 (@tailwindcss/postcss)
+├── eslint.config.js
+├── package.json                   # 의존성 (react, tailwindcss, vite 등)
+│
+└── src/
+    ├── main.jsx                      
+    ├── index.css                     # Tailwind 진입점 + body 스타일 + @keyframes slideIn
+    ├── App.css                       # Tailwind로 대체됨 (비어있음)
+    ├── App.jsx                       # 앱 루트 — 전체 상태 관리
+    │
+    ├── components/
+    │   ├── WeekView.jsx              # 주간 캘린더 뷰
+    │   ├── MonthView.jsx            # 월별 캘린더
+    │   ├── TodoInput.jsx              # 할 일 입력 폼
+    │   ├── FilterTabs.jsx               # 전체 / 진행 중 / 완료 필터
+    │   ├── TodoList.jsx                 # Todo 목록 렌더링
+    │   └── TodoItem.jsx               # Todo 단일 항목
+    │
+    └── utils/
+        └── dateUtils.js              # 날짜 계산 유틸 함수
